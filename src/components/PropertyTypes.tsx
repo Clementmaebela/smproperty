@@ -5,25 +5,21 @@ const types = [
   {
     icon: Tractor,
     name: "Farms",
-    count: 124,
     description: "Agricultural land for cultivation and livestock",
   },
   {
     icon: MapPinned,
     name: "Plots",
-    count: 256,
     description: "Vacant land ready for development",
   },
   {
     icon: Home,
     name: "Houses",
-    count: 89,
     description: "Rural homes with character and space",
   },
   {
     icon: Trees,
     name: "Smallholdings",
-    count: 67,
     description: "Perfect blend of land and living",
   },
 ];
@@ -71,9 +67,6 @@ const PropertyTypes = () => {
               <p className="font-body text-muted-foreground text-sm mb-4">
                 {type.description}
               </p>
-              <span className="inline-block px-3 py-1 bg-muted text-muted-foreground font-body font-semibold text-sm rounded-full">
-                {type.count} Properties
-              </span>
             </motion.div>
           ))}
         </div>
