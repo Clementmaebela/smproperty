@@ -31,7 +31,7 @@ export interface UserProfile {
 export class UserService {
   private static readonly COLLECTION_NAME = 'users';
 
-  static async createProfile(firebaseUser: FirebaseUser): Promise<UserProfile> {
+  static async createProfile(firebaseUser: FirebaseUser, role: 'user' | 'agent' = 'user'): Promise<UserProfile> {
     const userProfile: UserProfile = {
       uid: firebaseUser.uid,
       email: firebaseUser.email || '',
@@ -45,7 +45,7 @@ export class UserService {
       website: '',
       company: '',
       jobTitle: '',
-      role: 'user', // Default role for new users
+      role: role, // Use provided role instead of hardcoded 'user'
       isActive: true, // Default active status
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

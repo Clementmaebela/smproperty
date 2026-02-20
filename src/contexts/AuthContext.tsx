@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             });
           } else {
             // Create basic profile if it doesn't exist
-            await UserService.createProfile(firebaseUser);
+            await UserService.createProfile(firebaseUser, 'user');
             
             // Set user profile with our interface
             const userProfile: UserProfile = {
@@ -178,7 +178,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const result = await signUpWithEmail(email, password);
       
       // Create user profile with role using Firebase User
-      await UserService.createProfile(result);
+      await UserService.createProfile(result, role);
       
       // Set user profile with our interface
       const userProfile: UserProfile = {
