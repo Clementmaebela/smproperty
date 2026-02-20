@@ -24,6 +24,9 @@ import UserDashboard from "./pages/UserDashboard";
 import AdminTools from "./pages/AdminTools";
 import AgentSignUp from "./pages/AgentSignUp";
 import AdminSignIn from "./pages/AdminSignIn";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Cookies from "./pages/Cookies";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -113,6 +116,9 @@ const AppRoutes = () => {
       <Route path="/agent-signup" element={<PublicRoute><AgentSignUp /></PublicRoute>} />
       <Route path="/admin-signin" element={<PublicRoute><AdminSignIn /></PublicRoute>} />
       <Route path="/forgot-password" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/cookies" element={<Cookies />} />
 
       {/* Agent Routes */}
       <Route 

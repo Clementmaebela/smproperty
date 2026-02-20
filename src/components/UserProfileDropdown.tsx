@@ -122,7 +122,7 @@ const UserProfileDropdown = () => {
           <div className="p-2">
             {/* User Profile Link - Common for all authenticated users */}
             <Link
-              to="/user-profile"
+              to="/profile"
               className="flex items-center space-x-3 px-3 py-2 text-sm hover:bg-accent rounded-md transition-colors"
               onClick={() => setIsOpen(false)}
             >
