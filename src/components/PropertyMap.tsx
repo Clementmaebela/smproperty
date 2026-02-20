@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from "react";
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from "@react-google-maps/api";
 import { MapPin, Home, Ruler } from "lucide-react";
 import { motion } from "framer-motion";
+import StaticMap from "./StaticMap";
 
 // You can replace this with your actual Google Maps API key
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
@@ -116,9 +117,10 @@ const mapStyles = [
 
 interface PropertyMapProps {
   apiKey?: string;
+  useStaticFallback?: boolean;
 }
 
-const PropertyMap = ({ apiKey }: PropertyMapProps) => {
+const PropertyMap = ({ apiKey, useStaticFallback = false }: PropertyMapProps) => {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [inputApiKey, setInputApiKey] = useState(apiKey || GOOGLE_MAPS_API_KEY);
   const [useInputKey, setUseInputKey] = useState(false);
@@ -150,7 +152,7 @@ const PropertyMap = ({ apiKey }: PropertyMapProps) => {
   }, []);
 
   // Show API key input if no key is configured
-  if (!effectiveApiKey) {
+  if (!effectiveApiKey && !useStaticFallback) {
     return (
       <div className="bg-card rounded-xl p-8 text-center">
         <MapPin className="w-12 h-12 text-primary mx-auto mb-4" />
@@ -160,7 +162,7 @@ const PropertyMap = ({ apiKey }: PropertyMapProps) => {
         <p className="font-body text-muted-foreground mb-6">
           Enter your Google Maps API key to view property locations on the map.
         </p>
-        <div className="max-w-md mx-auto">
+        <div className="max-w-md mx-auto space-y-4">
           <input
             type="text"
             placeholder="Enter your Google Maps API key"
@@ -175,6 +177,16 @@ const PropertyMap = ({ apiKey }: PropertyMapProps) => {
           >
             Load Map
           </button>
+        </div>
+        <div className="mt-6 p-4 bg-muted/50 rounded-lg">
+          <h4 className="font-semibold text-foreground mb-2">How to get Google Maps API Key:</h4>
+          <ol className="text-left text-sm text-muted-foreground space-y-2">
+            <li>1. Go to <a href="https://console.cloud.google.com/" target="_blank" rel="noopener" className="text-primary hover:underline">Google Cloud Console</a></li>
+            <li>2. Create a new project or select existing one</li>
+            <li>3. Enable "Maps JavaScript API" and "Geocoding API"</li>
+            <li>4. Create credentials → API Key</li>
+            <li>5. Copy the API key and paste it above</li>
+          </ol>
         </div>
         <p className="font-body text-sm text-muted-foreground mt-4">
           Get your API key from{" "}
@@ -191,17 +203,37 @@ const PropertyMap = ({ apiKey }: PropertyMapProps) => {
     );
   }
 
-  if (loadError) {
+  // Show error if Google Maps fails to load
+  if (loadError && !useStaticFallback) {
     return (
       <div className="bg-card rounded-xl p-8 text-center">
-        <p className="font-body text-destructive">
-          Error loading Google Maps. Please check your API key.
+        <MapPin className="w-12 h-12 text-destructive mx-auto mb-4" />
+        <h3 className="font-display font-bold text-xl text-card-foreground mb-2">
+          Map Loading Error
+        </h3>
+        <p className="font-body text-destructive mb-4">
+          Unable to load Google Maps. Please check your API key and internet connection.
         </p>
+        <div className="space-y-2">
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            Retry Loading
+          </button>
+          <button
+            onClick={() => setUseInputKey(true)}
+            className="px-4 py-2 bg-muted text-muted-foreground rounded-lg hover:bg-muted/80 transition-colors"
+          >
+            Change API Key
+          </button>
+        </div>
       </div>
     );
   }
 
-  if (!isLoaded) {
+  // Show loading state
+  if (!isLoaded && !loadError && !useStaticFallback) {
     return (
       <div className="bg-card rounded-xl p-8 text-center">
         <div className="animate-pulse">
@@ -210,6 +242,11 @@ const PropertyMap = ({ apiKey }: PropertyMapProps) => {
         </div>
       </div>
     );
+  }
+
+  // Use StaticMap fallback if requested or if Google Maps fails
+  if (useStaticFallback || loadError) {
+    return <StaticMap properties={properties} />;
   }
 
   return (
