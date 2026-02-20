@@ -5,13 +5,13 @@ import { getAuth, GoogleAuthProvider, signInWithEmailAndPassword, createUserWith
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyB5h_SRPkWNZUaffDcsOZJ6V_WOKStF6K8",
-  authDomain: "ruralproperty-edae5.firebaseapp.com",
-  projectId: "ruralproperty-edae5",
-  storageBucket: "ruralproperty-edae5.firebasestorage.app",
-  messagingSenderId: "762367837812",
-  appId: "1:762367837812:web:2d1f60ab9000fcc1f7b321",
-  measurementId: "G-HT5H7K5HCW"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase

@@ -15,7 +15,7 @@ interface UserProfile {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: any | null;
   userProfile: UserProfile | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -80,8 +80,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
               role: 'user' as const,
               firstName: firebaseUser.displayName?.split(' ')[0] || '',
               lastName: firebaseUser.displayName?.split(' ')[1] || '',
-              phone: '',
-              profileImage: firebaseUser.photoURL || ''
+              phone: undefined,
+              profileImage: firebaseUser.photoURL || undefined
             };
             await UserService.createProfile(basicProfile);
             setUserProfile(basicProfile);
@@ -103,6 +103,23 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (email: string, password: string) => {
     try {
       setError(null);
+      
+      // Input validation
+      if (!email || !password) {
+        setError('Email and password are required');
+        throw new Error('Email and password are required');
+      }
+      
+      if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        setError('Please enter a valid email address');
+        throw new Error('Please enter a valid email address');
+      }
+      
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters');
+        throw new Error('Password must be at least 6 characters');
+      }
+      
       await signInWithEmail(email, password);
     } catch (error: any) {
       setError(error.message || 'Login failed');
@@ -113,6 +130,28 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const signup = async (email: string, password: string, firstName: string, lastName: string, role: 'user' | 'agent') => {
     try {
       setError(null);
+      
+      // Input validation
+      if (!email || !password || !firstName || !lastName) {
+        setError('All fields are required');
+        throw new Error('All fields are required');
+      }
+      
+      if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        setError('Please enter a valid email address');
+        throw new Error('Please enter a valid email address');
+      }
+      
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters');
+        throw new Error('Password must be at least 6 characters');
+      }
+      
+      if (firstName.length < 2 || lastName.length < 2) {
+        setError('First and last name must be at least 2 characters');
+        throw new Error('First and last name must be at least 2 characters');
+      }
+      
       const result = await signUpWithEmail(email, password);
       
       // Create user profile with role
@@ -123,8 +162,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         role,
         firstName,
         lastName,
-        phone: '',
-        profileImage: result.user.photoURL || ''
+        phone: phone || undefined,
+        profileImage: profileImage || undefined || result.user.photoURL || undefined
       };
       
       await UserService.createProfile(profile);
