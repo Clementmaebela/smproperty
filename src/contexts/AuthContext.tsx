@@ -11,8 +11,8 @@ interface UserProfile {
   role: 'admin' | 'agent' | 'user';
   firstName?: string;
   lastName?: string;
-  phone?: string;
-  profileImage?: string;
+  photoURL?: string;
+  phoneNumber?: string;
 }
 
 interface AuthContextType {
@@ -72,23 +72,25 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
               role: profile.role || 'user',
               firstName: profile.firstName,
               lastName: profile.lastName,
-              phone: profile.phone,
-              profileImage: profile.profileImage
+              phoneNumber: profile.phoneNumber,
+              photoURL: profile.photoURL
             });
           } else {
             // Create basic profile if it doesn't exist
-            const basicProfile = {
+            await UserService.createProfile(firebaseUser);
+            
+            // Set user profile with our interface
+            const userProfile: UserProfile = {
               uid: firebaseUser.uid,
               email: firebaseUser.email || '',
               displayName: firebaseUser.displayName || '',
               role: 'user' as const,
               firstName: firebaseUser.displayName?.split(' ')[0] || '',
               lastName: firebaseUser.displayName?.split(' ')[1] || '',
-              phone: undefined,
-              profileImage: firebaseUser.photoURL || undefined
+              phoneNumber: firebaseUser.phoneNumber || '',
+              photoURL: firebaseUser.photoURL || ''
             };
-            await UserService.createProfile(basicProfile);
-            setUserProfile(basicProfile);
+            setUserProfile(userProfile);
           }
         } catch (error) {
           console.error('Error fetching user profile:', error);
@@ -175,19 +177,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       recordAttempt(true);
       const result = await signUpWithEmail(email, password);
       
-      // Create user profile with role
-      const profile = {
-        uid: result.user.uid,
-        email: result.user.email || email,
+      // Create user profile with role using Firebase User
+      await UserService.createProfile(result);
+      
+      // Set user profile with our interface
+      const userProfile: UserProfile = {
+        uid: result.uid,
+        email: result.email || email,
         displayName: `${firstName} ${lastName}`,
         role,
         firstName,
         lastName,
-        phone: phone || undefined,
-        profileImage: profileImage || undefined || result.user.photoURL || undefined
+        phoneNumber: '',
+        photoURL: result.photoURL || ''
       };
-      
-      await UserService.createProfile(profile);
     } catch (error: any) {
       recordAttempt(false);
       setError(error.message || 'Sign up failed');

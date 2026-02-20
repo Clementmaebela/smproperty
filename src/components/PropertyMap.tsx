@@ -1,8 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from "@react-google-maps/api";
-import { MapPin, Home, Ruler, RefreshCw, Map } from "lucide-react";
+import { MapPin, Home, Ruler } from "lucide-react";
 import { motion } from "framer-motion";
-import FallbackMap from "./FallbackMap";
 
 // You can replace this with your actual Google Maps API key
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
@@ -18,7 +17,6 @@ interface Property {
   coordinates: { lat: number; lng: number };
 }
 
-// Sample properties - in production, this would come from your database
 const properties: Property[] = [
   {
     id: "1",
@@ -131,8 +129,6 @@ const PropertyMap = ({ apiKey }: PropertyMapProps) => {
     googleMapsApiKey: effectiveApiKey,
   });
 
-  const [showFallback, setShowFallback] = useState(false);
-
   const options = useMemo(
     () => ({
       styles: mapStyles,
@@ -164,36 +160,23 @@ const PropertyMap = ({ apiKey }: PropertyMapProps) => {
         <p className="font-body text-muted-foreground mb-6">
           Enter your Google Maps API key to view property locations on the map.
         </p>
-        <div className="max-w-md mx-auto space-y-4">
+        <div className="max-w-md mx-auto">
           <input
             type="text"
             placeholder="Enter your Google Maps API key"
             value={inputApiKey}
             onChange={(e) => setInputApiKey(e.target.value)}
-            className="w-full h-12 px-4 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground font-body focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full h-12 px-4 rounded-lg bg-muted border border-border text-foreground placeholder:text-muted-foreground font-body focus:outline-none focus:ring-2 focus:ring-primary mb-4"
           />
           <button
             onClick={() => setUseInputKey(true)}
-            disabled={!inputApiKey || inputApiKey.length < 20}
+            disabled={!inputApiKey}
             className="w-full h-12 px-6 rounded-lg bg-primary text-primary-foreground font-body font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
           >
             Load Map
           </button>
         </div>
-        <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-          <h4 className="font-semibold text-foreground mb-2">How to get your API key:</h4>
-          <ol className="text-left text-sm text-muted-foreground space-y-2">
-            <li>1. Go to <a href="https://console.cloud.google.com/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google Cloud Console</a></li>
-            <li>2. Create a new project or select existing one</li>
-            <li>3. Enable "Maps JavaScript API" and "Geocoding API"</li>
-            <li>4. Create credentials (API key)</li>
-            <li>5. Copy the API key and paste it above</li>
-          </ol>
-        </div>
         <p className="font-body text-sm text-muted-foreground mt-4">
-          <strong>Note:</strong> The API key should start with "AIza" and be at least 39 characters long.
-        </p>
-        <p className="font-body text-sm text-muted-foreground">
           Get your API key from{" "}
           <a
             href="https://console.cloud.google.com/apis/credentials"
@@ -211,29 +194,9 @@ const PropertyMap = ({ apiKey }: PropertyMapProps) => {
   if (loadError) {
     return (
       <div className="bg-card rounded-xl p-8 text-center">
-        <MapPin className="w-12 h-12 text-destructive mx-auto mb-4" />
-        <h3 className="font-display font-bold text-xl text-card-foreground mb-2">
-          Map Loading Error
-        </h3>
-        <p className="font-body text-destructive mb-4">
-          Failed to load Google Maps. Please check your API key and internet connection.
+        <p className="font-body text-destructive">
+          Error loading Google Maps. Please check your API key.
         </p>
-        <div className="max-w-md mx-auto">
-          <button
-            onClick={() => window.location.reload()}
-            className="h-12 px-6 rounded-lg bg-primary text-primary-foreground font-body font-semibold hover:bg-primary/90 transition-colors"
-          >
-            Retry Loading Map
-          </button>
-        </div>
-        <p className="font-body text-sm text-muted-foreground mt-4">
-          Make sure your API key is valid and has the following APIs enabled:
-        </p>
-        <ul className="text-left text-sm text-muted-foreground space-y-1">
-          <li>• Maps JavaScript API</li>
-          <li>• Geocoding API</li>
-          <li>• Places API (optional)</li>
-        </ul>
       </div>
     );
   }
@@ -262,6 +225,15 @@ const PropertyMap = ({ apiKey }: PropertyMapProps) => {
             key={property.id}
             position={property.coordinates}
             onClick={() => onMarkerClick(property)}
+            icon={{
+              url: `data:image/svg+xml,${encodeURIComponent(`
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="hsl(16, 65%, 45%)" width="36" height="36">
+                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+                </svg>
+              `)}`,
+              scaledSize: new google.maps.Size(36, 36),
+              anchor: new google.maps.Point(18, 36),
+            }}
           />
         ))}
 
