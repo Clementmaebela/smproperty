@@ -1,13 +1,14 @@
 import { MapPin, Ruler, Bed, Bath, Heart } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 interface PropertyCardProps {
   id: string;
   title: string;
-  location: string;
-  price: string;
-  size: string;
+  location: string | { city: string; province: string; address: string };
+  price: number | string;
+  size: string | { landSize: string; totalSize: string };
   bedrooms?: number;
   bathrooms?: number;
   type: string;
@@ -16,6 +17,7 @@ interface PropertyCardProps {
 }
 
 const PropertyCard = ({
+  id,
   title,
   location,
   price,
@@ -28,18 +30,25 @@ const PropertyCard = ({
 }: PropertyCardProps) => {
   const [isLiked, setIsLiked] = useState(false);
 
+  // Handle different data structures
+  const locationText = typeof location === 'string' ? location : `${location.city}, ${location.province}`;
+  const priceText = typeof price === 'string' ? price : `R${price.toLocaleString()}`;
+  const sizeText = typeof size === 'string' ? size : size.totalSize || size.landSize;
+  const imageUrl = Array.isArray(image) ? image[0] : image;
+
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.5 }}
-      className="group bg-card rounded-xl overflow-hidden shadow-card hover:shadow-elevated transition-all duration-500 cursor-pointer"
-    >
+    <Link to={`/properties/${id}`}>
+      <motion.article
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className="group bg-card rounded-xl overflow-hidden shadow-card hover:shadow-elevated transition-all duration-500 cursor-pointer"
+      >
       {/* Image Container */}
       <div className="relative aspect-[4/3] overflow-hidden">
         <img
-          src={image}
+          src={imageUrl}
           alt={title}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
         />
@@ -78,7 +87,7 @@ const PropertyCard = ({
         {/* Price Badge */}
         <div className="absolute bottom-4 left-4">
           <span className="px-4 py-2 bg-background/95 backdrop-blur-sm text-foreground font-display font-bold text-lg rounded-lg shadow-soft">
-            {price}
+            {priceText}
           </span>
         </div>
       </div>
@@ -91,14 +100,14 @@ const PropertyCard = ({
 
         <div className="flex items-center gap-2 text-muted-foreground mb-4">
           <MapPin className="w-4 h-4 text-primary" />
-          <span className="font-body text-sm">{location}</span>
+          <span className="font-body text-sm">{locationText}</span>
         </div>
 
         {/* Property Details */}
         <div className="flex items-center gap-4 pt-4 border-t border-border">
           <div className="flex items-center gap-1.5 text-muted-foreground">
             <Ruler className="w-4 h-4" />
-            <span className="font-body text-sm">{size}</span>
+            <span className="font-body text-sm">{sizeText}</span>
           </div>
           {bedrooms && (
             <div className="flex items-center gap-1.5 text-muted-foreground">
@@ -115,6 +124,7 @@ const PropertyCard = ({
         </div>
       </div>
     </motion.article>
+    </Link>
   );
 };
 

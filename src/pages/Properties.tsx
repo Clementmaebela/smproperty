@@ -1,105 +1,14 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
-import { Search, MapPin, SlidersHorizontal, X, Grid, Map } from "lucide-react";
+import { Search, MapPin, SlidersHorizontal, X, Grid, Map, Plus } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PropertyCard from "@/components/PropertyCard";
 import PropertyMap from "@/components/PropertyMap";
 import { Button } from "@/components/ui/button";
-
-const allProperties = [
-  {
-    id: "1",
-    title: "Fertile Farm with River Access",
-    location: "Tzaneen, Limpopo",
-    price: "R2,450,000",
-    size: "15 hectares",
-    type: "Farm",
-    image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80",
-    featured: true,
-  },
-  {
-    id: "2",
-    title: "Mountain View Smallholding",
-    location: "Sabie, Mpumalanga",
-    price: "R1,850,000",
-    size: "5 hectares",
-    bedrooms: 3,
-    bathrooms: 2,
-    type: "Smallholding",
-    image: "https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=800&q=80",
-    featured: true,
-  },
-  {
-    id: "3",
-    title: "Residential Plot in Growing Area",
-    location: "Mthatha, Eastern Cape",
-    price: "R380,000",
-    size: "2,000 m²",
-    type: "Plot",
-    image: "https://images.unsplash.com/photo-1628624747186-a941c476b7ef?w=800&q=80",
-  },
-  {
-    id: "4",
-    title: "Traditional Homestead with Land",
-    location: "Nongoma, KwaZulu-Natal",
-    price: "R950,000",
-    size: "3 hectares",
-    bedrooms: 4,
-    bathrooms: 2,
-    type: "House",
-    image: "https://images.unsplash.com/photo-1416331108676-a22ccb276e35?w=800&q=80",
-  },
-  {
-    id: "5",
-    title: "Irrigated Agricultural Land",
-    location: "Brits, North West",
-    price: "R3,200,000",
-    size: "25 hectares",
-    type: "Farm",
-    image: "https://images.unsplash.com/photo-1500076656116-558758c991c1?w=800&q=80",
-  },
-  {
-    id: "6",
-    title: "Peri-Urban Development Plot",
-    location: "Rustenburg, North West",
-    price: "R520,000",
-    size: "1,500 m²",
-    type: "Plot",
-    image: "https://images.unsplash.com/photo-1625244724120-1fd1d34d00f6?w=800&q=80",
-  },
-  {
-    id: "7",
-    title: "Coastal Farm with Ocean Views",
-    location: "Port Alfred, Eastern Cape",
-    price: "R4,500,000",
-    size: "30 hectares",
-    type: "Farm",
-    image: "https://images.unsplash.com/photo-1500595046743-cd271d694e30?w=800&q=80",
-  },
-  {
-    id: "8",
-    title: "Modern Rural Family Home",
-    location: "White River, Mpumalanga",
-    price: "R2,100,000",
-    size: "8,000 m²",
-    bedrooms: 5,
-    bathrooms: 3,
-    type: "House",
-    image: "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=800&q=80",
-  },
-  {
-    id: "9",
-    title: "Bushveld Game Farm",
-    location: "Hoedspruit, Limpopo",
-    price: "R8,900,000",
-    size: "150 hectares",
-    type: "Farm",
-    image: "https://images.unsplash.com/photo-1516426122078-c23e76319801?w=800&q=80",
-    featured: true,
-  },
-];
+import { useProperties } from "@/hooks/useProperties";
+import { Link } from "react-router-dom";
 
 const propertyTypes = ["All", "Farm", "Plot", "House", "Smallholding"];
 const provinces = ["All Provinces", "Limpopo", "Mpumalanga", "KwaZulu-Natal", "Eastern Cape", "North West", "Free State", "Gauteng", "Western Cape", "Northern Cape"];
@@ -113,12 +22,27 @@ const Properties = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "map">("grid");
 
+  // Build filters object
+  const filters = {
+    type: selectedType !== "All" ? selectedType : undefined,
+    location: selectedProvince !== "All Provinces" ? selectedProvince : undefined,
+    minPrice: selectedPrice === "Under R500K" ? 0 : 
+              selectedPrice === "R500K - R1M" ? 500000 :
+              selectedPrice === "R1M - R3M" ? 1000000 :
+              selectedPrice === "R3M - R5M" ? 3000000 :
+              selectedPrice === "Over R5M" ? 5000000 : undefined,
+    maxPrice: selectedPrice === "Under R500K" ? 500000 :
+              selectedPrice === "R500K - R1M" ? 1000000 :
+              selectedPrice === "R1M - R3M" ? 3000000 :
+              selectedPrice === "R3M - R5M" ? 5000000 : undefined,
+  };
+
+  const { data: allProperties = [], isLoading, error } = useProperties(filters);
+
   const filteredProperties = allProperties.filter((property) => {
     const matchesSearch = property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       property.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = selectedType === "All" || property.type === selectedType;
-    const matchesProvince = selectedProvince === "All Provinces" || property.location.includes(selectedProvince.split(" ")[0]);
-    return matchesSearch && matchesType && matchesProvince;
+    return matchesSearch;
   });
 
   const clearFilters = () => {
@@ -140,7 +64,7 @@ const Properties = () => {
       <div className="min-h-screen bg-background">
         <Header />
         
-        <main className="pt-20">
+        <main className="pt-16 lg:pt-20">
           {/* Page Header */}
           <section className="bg-accent py-16 lg:py-20">
             <div className="container mx-auto px-4">
@@ -177,28 +101,34 @@ const Properties = () => {
                 </div>
 
                 {/* Filter Controls */}
-                <div className="flex items-center gap-4 w-full lg:w-auto">
-                  <Button
-                    variant="outline"
-                    className="gap-2"
-                    onClick={() => setShowFilters(!showFilters)}
-                  >
-                    <SlidersHorizontal className="w-4 h-4" />
-                    Filters
-                    {hasActiveFilters && (
-                      <span className="w-2 h-2 rounded-full bg-primary" />
-                    )}
-                  </Button>
+                <div className="flex justify-between items-center mb-6">
+                  <div className="flex items-center gap-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowFilters(!showFilters)}
+                      className="flex items-center gap-2"
+                    >
+                      <SlidersHorizontal className="w-4 h-4" />
+                      {showFilters ? "Hide Filters" : "Show Filters"}
+                    </Button>
+                    
+                    <Link to="/properties/add">
+                      <Button>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Property
+                      </Button>
+                    </Link>
+                  </div>
 
-                  {/* View Toggle */}
-                  <div className="flex items-center bg-muted rounded-lg p-1">
-                    <button
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
                       onClick={() => setViewMode("grid")}
                       className={`p-2 rounded-md transition-colors ${viewMode === "grid" ? "bg-background shadow-soft" : ""}`}
                       aria-label="Grid view"
                     >
                       <Grid className="w-5 h-5" />
-                    </button>
+                    </Button>
                     <button
                       onClick={() => setViewMode("map")}
                       className={`p-2 rounded-md transition-colors ${viewMode === "map" ? "bg-background shadow-soft" : ""}`}
@@ -207,11 +137,11 @@ const Properties = () => {
                       <Map className="w-5 h-5" />
                     </button>
                   </div>
-
-                  <span className="font-body text-muted-foreground text-sm hidden sm:inline">
-                    {filteredProperties.length} properties found
-                  </span>
                 </div>
+
+                <span className="font-body text-muted-foreground text-sm hidden sm:inline">
+                  {filteredProperties.length} properties found
+                </span>
               </div>
 
               {/* Expanded Filters */}
@@ -303,20 +233,56 @@ const Properties = () => {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.5, delay: index * 0.1 }}
                         >
-                          <PropertyCard {...property} />
+                          <PropertyCard 
+                            id={property.id!}
+                            title={property.title}
+                            location={property.location}
+                            price={property.price}
+                            size={property.size}
+                            bedrooms={property.bedrooms}
+                            bathrooms={property.bathrooms}
+                            type={property.type}
+                            image={property.image}
+                            featured={property.featured}
+                          />
                         </motion.div>
                       ))}
                     </div>
                   ) : (
                     <div className="text-center py-16">
-                      <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="font-display font-bold text-xl text-foreground mb-2">
-                        No properties found
-                      </h3>
-                      <p className="font-body text-muted-foreground mb-6">
-                        Try adjusting your search or filters to find what you're looking for.
-                      </p>
-                      <Button onClick={clearFilters}>Clear All Filters</Button>
+                      {isLoading ? (
+                        <>
+                          <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                          <h3 className="font-display font-bold text-xl text-foreground mb-2">
+                            Loading properties...
+                          </h3>
+                          <p className="font-body text-muted-foreground mb-6">
+                            Please wait while we fetch the latest listings.
+                          </p>
+                        </>
+                      ) : error ? (
+                        <>
+                          <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                          <h3 className="font-display font-bold text-xl text-foreground mb-2">
+                            Error loading properties
+                          </h3>
+                          <p className="font-body text-muted-foreground mb-6">
+                            There was an error loading the properties. Please try again.
+                          </p>
+                          <Button onClick={() => window.location.reload()}>Retry</Button>
+                        </>
+                      ) : (
+                        <>
+                          <Search className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                          <h3 className="font-display font-bold text-xl text-foreground mb-2">
+                            No properties found
+                          </h3>
+                          <p className="font-body text-muted-foreground mb-6">
+                            Try adjusting your search or filters to find what you're looking for.
+                          </p>
+                          <Button onClick={clearFilters}>Clear All Filters</Button>
+                        </>
+                      )}
                     </div>
                   )}
                 </>

@@ -2,119 +2,82 @@ import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PropertyCard from "./PropertyCard";
-
-const properties = [
-  {
-    id: "1",
-    title: "Fertile Farm with River Access",
-    location: "Tzaneen, Limpopo",
-    price: "R2,450,000",
-    size: "15 hectares",
-    type: "Farm",
-    image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80",
-    featured: true,
-  },
-  {
-    id: "2",
-    title: "Mountain View Smallholding",
-    location: "Sabie, Mpumalanga",
-    price: "R1,850,000",
-    size: "5 hectares",
-    bedrooms: 3,
-    bathrooms: 2,
-    type: "Smallholding",
-    image: "https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?w=800&q=80",
-    featured: true,
-  },
-  {
-    id: "3",
-    title: "Residential Plot in Growing Area",
-    location: "Mthatha, Eastern Cape",
-    price: "R380,000",
-    size: "2,000 m²",
-    type: "Plot",
-    image: "https://images.unsplash.com/photo-1628624747186-a941c476b7ef?w=800&q=80",
-  },
-  {
-    id: "4",
-    title: "Traditional Homestead with Land",
-    location: "Nongoma, KwaZulu-Natal",
-    price: "R950,000",
-    size: "3 hectares",
-    bedrooms: 4,
-    bathrooms: 2,
-    type: "House",
-    image: "https://images.unsplash.com/photo-1416331108676-a22ccb276e35?w=800&q=80",
-  },
-  {
-    id: "5",
-    title: "Irrigated Agricultural Land",
-    location: "Brits, North West",
-    price: "R3,200,000",
-    size: "25 hectares",
-    type: "Farm",
-    image: "https://images.unsplash.com/photo-1500076656116-558758c991c1?w=800&q=80",
-  },
-  {
-    id: "6",
-    title: "Peri-Urban Development Plot",
-    location: "Rustenburg, North West",
-    price: "R520,000",
-    size: "1,500 m²",
-    type: "Plot",
-    image: "https://images.unsplash.com/photo-1625244724120-1fd1d34d00f6?w=800&q=80",
-  },
-];
+import { useQuery } from '@tanstack/react-query';
+import { PropertiesService } from '@/services/databaseService';
 
 const FeaturedProperties = () => {
+  const { data: properties = [], isLoading } = useQuery({
+    queryKey: ['featured-properties'],
+    queryFn: () => PropertiesService.getFeaturedProperties(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
   return (
-    <section className="py-20 lg:py-28 bg-background">
+    <section className="py-16 bg-accent">
       <div className="container mx-auto px-4">
-        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-12 lg:mb-16"
+          className="text-center mb-12"
         >
-          <span className="inline-block px-4 py-2 bg-primary/10 text-primary font-body font-semibold text-sm rounded-full mb-4">
-            Featured Listings
-          </span>
-          <h2 className="font-display text-3xl md:text-4xl lg:text-5xl text-foreground mb-4">
-            Discover Your <span className="text-primary">Dream Land</span>
+          <h2 className="font-display text-3xl text-accent-foreground mb-4">
+            Featured Properties
           </h2>
-          <p className="font-body text-muted-foreground text-lg max-w-2xl mx-auto">
-            Explore our handpicked selection of rural and peri-urban properties across South Africa's most beautiful regions.
+          <p className="font-body text-accent-foreground/80 mb-8 max-w-2xl mx-auto">
+            Discover our hand-picked selection of premium rural properties across South Africa
           </p>
         </motion.div>
 
-        {/* Property Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-          {properties.map((property, index) => (
-            <motion.div
-              key={property.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <PropertyCard {...property} />
-            </motion.div>
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="text-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-accent-foreground"></div>
+            <p className="mt-4 text-accent-foreground">Loading featured properties...</p>
+          </div>
+        ) : properties.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            {properties.map((property, index) => (
+              <motion.div
+                key={property.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <PropertyCard 
+                  id={property.id}
+                  title={property.title}
+                  location={property.location}
+                  price={property.priceFormatted || property.price}
+                  size={property.size}
+                  bedrooms={property.features?.bedrooms}
+                  bathrooms={property.features?.bathrooms}
+                  type={property.propertyType}
+                  image={property.images?.[0]}
+                  featured={property.featured}
+                />
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16">
+            <p className="font-body text-accent-foreground/80">
+              No featured properties available at the moment.
+            </p>
+          </div>
+        )}
 
-        {/* View All Button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-center mt-12"
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="text-center"
         >
-          <Button size="lg" className="gap-2">
+          <Button variant="outline" size="lg" className="mt-8">
+            <ArrowRight className="w-4 h-4 mr-2" />
             View All Properties
-            <ArrowRight className="w-5 h-5" />
           </Button>
         </motion.div>
       </div>

@@ -1,0 +1,96 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Public read access for properties
+    match /properties/{propertyId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && (isAdmin() || isAgent());
+      allow update: if isAuthenticated() && (isAdmin() || 
+                   isAgent() && resource.data.agent.id == request.auth.uid ||
+                   isOwner(resource.data.owner.id));
+      allow delete: if isAdmin();
+    }
+    
+    // User-specific access
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin() || isAgent());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow delete: if isAdmin();
+    }
+    
+    // Public agent profiles
+    match /agents/{agentId} {
+      allow read: if true;
+      allow create: if isAdmin();
+      allow update: if isAuthenticated() && (isAdmin() || isOwner(agentId));
+      allow delete: if isAdmin();
+    }
+    
+    // Inquiry access for involved parties
+    match /inquiries/{inquiryId} {
+      allow read: if isAuthenticated() && 
+                  (isOwner(resource.data.userId) || 
+                   isOwner(resource.data.agentId) || 
+                   isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && 
+                  (isOwner(resource.data.userId) || 
+                   isOwner(resource.data.agentId) || 
+                   isAdmin());
+      allow delete: if isAdmin();
+    }
+    
+    // Public reviews with moderation
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && isOwner(resource.data.userId);
+      allow update: if isAuthenticated() && 
+                  (isOwner(resource.data.userId) || 
+                   isOwner(resource.data.agentId) || 
+                   isAdmin());
+      allow delete: if isAdmin() || isOwner(resource.data.userId);
+    }
+    
+    // Private saved searches
+    match /savedSearches/{searchId} {
+      allow read: if isAuthenticated() && isOwner(resource.data.userId);
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && isOwner(resource.data.userId);
+      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+    }
+    
+    // Admin-only analytics
+    match /propertyAnalytics/{analyticsId} {
+      allow read: if isAuthenticated() && (isAdmin() || isAgent());
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Public system settings, admin-only write
+    match /systemSettings/{settingsId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isAgent() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'agent';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+  }
+}

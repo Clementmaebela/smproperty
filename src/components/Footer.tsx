@@ -1,7 +1,14 @@
-import { Link } from "react-router-dom";
-import { Home, Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Home, Facebook, Instagram, Twitter, Mail, Phone, MapPin, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Footer = () => {
+  const navigate = useNavigate();
+
+  const handleAdminLogin = () => {
+    navigate('/admin-signin');
+  };
+
   return (
     <footer className="bg-foreground text-background">
       <div className="container mx-auto px-4 py-16">
@@ -47,58 +54,76 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Provinces */}
+          {/* Contact Info */}
           <div>
-            <h4 className="font-display font-bold text-lg text-background mb-6">Provinces</h4>
+            <h4 className="font-display font-bold text-lg text-background mb-6">Contact Info</h4>
             <ul className="space-y-3">
-              {["Limpopo", "Mpumalanga", "KwaZulu-Natal", "Eastern Cape", "North West", "Free State"].map((province) => (
-                <li key={province}>
-                  <Link to="#" className="font-body text-background/70 hover:text-primary transition-colors">
-                    {province}
-                  </Link>
-                </li>
-              ))}
+              <li className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-primary" />
+                <span className="font-body text-background/70">+27 72 050 5053</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Mail className="w-4 h-4 text-primary" />
+                <span className="font-body text-background/70">info@ruralproperties.co.za</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary" />
+                <span className="font-body text-background/70">Polokwane, South Africa</span>
+              </li>
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* Legal */}
           <div>
-            <h4 className="font-display font-bold text-lg text-background mb-6">Contact Us</h4>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-primary mt-0.5" />
-                <span className="font-body text-background/70 text-sm">
-                  123 Ubuntu Street, Pretoria, Gauteng 0001
-                </span>
+            <h4 className="font-display font-bold text-lg text-background mb-6">Legal</h4>
+            <ul className="space-y-3">
+              <li>
+                <Link to="/privacy" className="font-body text-background/70 hover:text-primary transition-colors">
+                  Privacy Policy
+                </Link>
               </li>
-              <li className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-primary" />
-                <a href="tel:+27123456789" className="font-body text-background/70 text-sm hover:text-primary transition-colors">
-                  +27 12 345 6789
-                </a>
+              <li>
+                <Link to="/terms" className="font-body text-background/70 hover:text-primary transition-colors">
+                  Terms of Service
+                </Link>
               </li>
-              <li className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-primary" />
-                <a href="mailto:info@ruralproperties.co.za" className="font-body text-background/70 text-sm hover:text-primary transition-colors">
-                  info@ruralproperties.co.za
-                </a>
+              <li>
+                <Link to="/cookies" className="font-body text-background/70 hover:text-primary transition-colors">
+                  Cookie Policy
+                </Link>
               </li>
             </ul>
+          </div>
+
+          {/* Admin Access */}
+          <div>
+            <h4 className="font-display font-bold text-lg text-background mb-6">System Access</h4>
+            <div className="space-y-3">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleAdminLogin}
+                className="w-full justify-start"
+              >
+                <Shield className="w-4 h-4 mr-2" />
+                Admin Login
+              </Button>
+              <p className="text-xs text-background/60 mt-2">
+                For system administrators only
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-background/10 mt-12 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="font-body text-background/50 text-sm">
-            © 2024 RuralProperties. All rights reserved.
-          </p>
-          <div className="flex items-center gap-6">
-            <Link to="#" className="font-body text-background/50 text-sm hover:text-primary transition-colors">
-              Privacy Policy
-            </Link>
-            <Link to="#" className="font-body text-background/50 text-sm hover:text-primary transition-colors">
-              Terms of Service
-            </Link>
+        <div className="border-t border-background/20 mt-12 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <p className="font-body text-background/60 text-sm">
+              © 2026 Rural Properties South Africa. All rights reserved.
+            </p>
+            <p className="font-body text-background/60 text-sm">
+              Built by Sitimark
+            </p>
           </div>
         </div>
       </div>

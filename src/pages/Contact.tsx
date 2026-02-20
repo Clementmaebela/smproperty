@@ -42,8 +42,8 @@ const Contact = () => {
     {
       icon: Phone,
       title: "Phone",
-      details: ["+27 12 345 6789", "+27 82 123 4567"],
-      action: "tel:+27123456789",
+      details: ["+27 71 050 5053", "+27 82 406 7777"],
+      action: "tel:+27710505053",
     },
     {
       icon: Mail,
@@ -51,18 +51,7 @@ const Contact = () => {
       details: ["info@ruralproperties.co.za", "sales@ruralproperties.co.za"],
       action: "mailto:info@ruralproperties.co.za",
     },
-    {
-      icon: MapPin,
-      title: "Office",
-      details: ["123 Ubuntu Street", "Pretoria, Gauteng 0001"],
-      action: "https://maps.google.com",
-    },
-    {
-      icon: Clock,
-      title: "Hours",
-      details: ["Mon - Fri: 8am - 5pm", "Sat: 9am - 1pm"],
-      action: null,
-    },
+   
   ];
 
   return (
@@ -291,7 +280,7 @@ const Contact = () => {
                   Visit Our Office
                 </h2>
                 <p className="font-body text-muted-foreground">
-                  123 Ubuntu Street, Pretoria, Gauteng 0001
+                  Polokwane, Limpopo, 0727
                 </p>
               </motion.div>
 
