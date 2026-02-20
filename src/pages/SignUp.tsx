@@ -11,6 +11,17 @@ import { Separator } from '@/components/ui/separator';
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Home, Check } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
+const isFormValid = (formData: { firstName: string; lastName: string; email: string; password: string; confirmPassword: string; agreeToTerms: boolean }) => {
+  return (
+    formData.firstName.trim().length >= 2 &&
+    formData.lastName.trim().length >= 2 &&
+    formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/) &&
+    formData.password.length >= 6 &&
+    formData.password === formData.confirmPassword &&
+    formData.agreeToTerms
+  );
+};
+
 const SignUp = () => {
   const navigate = useNavigate();
   const { signup, loginWithGoogle, loading, error, clearError } = useAuth();
@@ -22,7 +33,8 @@ const SignUp = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    agreeToTerms: false
+    agreeToTerms: false,
+    role: 'user' as 'user' | 'agent'
   });
 
   useEffect(() => {
@@ -33,17 +45,18 @@ const SignUp = () => {
     e.preventDefault();
     clearError();
     
-    if (formData.password !== formData.confirmPassword) {
-      return;
-    }
-    
-    if (!formData.agreeToTerms) {
+    if (!isFormValid(formData)) {
       return;
     }
     
     try {
-      await signup(formData.email, formData.password);
-      navigate('/dashboard');
+      await signup(formData.email, formData.password, formData.firstName, formData.lastName, formData.role);
+      // Redirect based on role - traditional property app behavior
+      if (formData.role === 'user') {
+        navigate('/'); // Regular users go to homepage
+      } else {
+        navigate('/agent'); // Agents go to dashboard
+      }
     } catch (error) {
       // Error is handled by AuthContext
     }
@@ -212,6 +225,22 @@ const SignUp = () => {
                       />
                     </div>
                   </div>
+                  <div>
+                    <Label htmlFor="role">Account Type</Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                      <select
+                        id="role"
+                        value={formData.role}
+                        onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as 'user' | 'agent' }))}
+                        className="pl-10 pr-10"
+                        required
+                      >
+                        <option value="user">Property Seeker</option>
+                        <option value="agent">Property Agent</option>
+                      </select>
+                    </div>
+                  </div>
 
                   <div>
                     <Label htmlFor="password">Password</Label>
@@ -291,7 +320,7 @@ const SignUp = () => {
                   <Button 
                     type="submit" 
                     className="w-full" 
-                    disabled={loading || !isFormValid()}
+                    disabled={loading || !isFormValid(formData)}
                   >
                     {loading ? 'Creating account...' : 'Create Account'}
                   </Button>

@@ -249,7 +249,7 @@ const Contact = () => {
                         </p>
                         <Button variant="secondary" size="sm" asChild>
                           <a
-                            href="https://wa.me/27821234567"
+                            href="https://wa.me/27824067777"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="gap-2"
