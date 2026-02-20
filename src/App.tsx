@@ -55,16 +55,17 @@ const ProtectedRoute = ({ children, requiredRole }: {
   }
 
   if (requiredRole && userProfile.role !== requiredRole) {
-    // Redirect to appropriate dashboard based on user role
+    // Redirect to appropriate location based on user role
     switch (userProfile.role) {
       case 'admin':
         return <Navigate to="/admin" replace />;
       case 'agent':
         return <Navigate to="/agent" replace />;
       case 'user':
-        return <Navigate to="/user" replace />;
+        // Regular users go to homepage (traditional property app behavior)
+        return <Navigate to="/" replace />;
       default:
-        return <Navigate to="/signin" replace />;
+        return <Navigate to="/" replace />;
     }
   }
 
@@ -87,16 +88,17 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   }
 
   if (userProfile) {
-    // Redirect to appropriate dashboard based on user role
+    // Redirect based on user role - traditional property app behavior
     switch (userProfile.role) {
       case 'admin':
         return <Navigate to="/admin" replace />;
       case 'agent':
         return <Navigate to="/agent" replace />;
       case 'user':
-        return <Navigate to="/user" replace />;
+        // Regular users go to homepage (traditional property app behavior)
+        return <Navigate to="/" replace />;
       default:
-        return <Navigate to="/user" replace />;
+        return <Navigate to="/" replace />;
     }
   }
 
