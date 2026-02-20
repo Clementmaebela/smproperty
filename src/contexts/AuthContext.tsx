@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { signInWithEmail, signUpWithEmail, signInWithGoogle, signOut, auth } from '@/lib/firebase/config';
 import { UserService } from '@/services/userService';
+import useRateLimit from '@/hooks/useRateLimit';
 
 interface UserProfile {
   uid: string;
@@ -27,6 +28,8 @@ interface AuthContextType {
   isAdmin: boolean;
   isAgent: boolean;
   isRegularUser: boolean;
+  isLocked: boolean;
+  remainingAttempts: number;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,10 +47,11 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { checkRateLimit, recordAttempt, isLocked, remainingAttempts } = useRateLimit();
 
   const isAdmin = userProfile?.role === 'admin';
   const isAgent = userProfile?.role === 'agent';
@@ -104,6 +108,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       setError(null);
       
+      // Check rate limiting
+      const rateLimit = checkRateLimit();
+      if (!rateLimit.allowed) {
+        setError(rateLimit.error || 'Too many login attempts. Please try again later.');
+        throw new Error(rateLimit.error || 'Too many login attempts. Please try again later.');
+      }
+      
       // Input validation
       if (!email || !password) {
         setError('Email and password are required');
@@ -120,8 +131,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         throw new Error('Password must be at least 6 characters');
       }
       
+      recordAttempt(true);
       await signInWithEmail(email, password);
     } catch (error: any) {
+      recordAttempt(false);
       setError(error.message || 'Login failed');
       throw error;
     }
@@ -130,6 +143,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const signup = async (email: string, password: string, firstName: string, lastName: string, role: 'user' | 'agent') => {
     try {
       setError(null);
+      
+      // Check rate limiting
+      const rateLimit = checkRateLimit();
+      if (!rateLimit.allowed) {
+        setError(rateLimit.error || 'Too many sign up attempts. Please try again later.');
+        throw new Error(rateLimit.error || 'Too many sign up attempts. Please try again later.');
+      }
       
       // Input validation
       if (!email || !password || !firstName || !lastName) {
@@ -152,6 +172,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         throw new Error('First and last name must be at least 2 characters');
       }
       
+      recordAttempt(true);
       const result = await signUpWithEmail(email, password);
       
       // Create user profile with role
@@ -168,6 +189,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       
       await UserService.createProfile(profile);
     } catch (error: any) {
+      recordAttempt(false);
       setError(error.message || 'Sign up failed');
       throw error;
     }
@@ -176,8 +198,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const loginWithGoogle = async () => {
     try {
       setError(null);
+      
+      // Check rate limiting
+      const rateLimit = checkRateLimit();
+      if (!rateLimit.allowed) {
+        setError(rateLimit.error || 'Too many login attempts. Please try again later.');
+        throw new Error(rateLimit.error || 'Too many login attempts. Please try again later.');
+      }
+      
+      recordAttempt(true);
       await signInWithGoogle();
     } catch (error: any) {
+      recordAttempt(false);
       setError(error.message || 'Google sign in failed');
       throw error;
     }
@@ -186,10 +218,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const logout = async () => {
     try {
       setError(null);
+      recordAttempt(true);
       await signOut();
       setUserProfile(null);
     } catch (error: any) {
+      recordAttempt(false);
       setError(error.message || 'Logout failed');
+      throw error;
     }
   };
 
@@ -207,7 +242,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     clearError,
     isAdmin,
     isAgent,
-    isRegularUser
+    isRegularUser,
+    isLocked,
+    remainingAttempts,
   };
 
   return (
