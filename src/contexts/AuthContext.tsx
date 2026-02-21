@@ -20,7 +20,7 @@ interface AuthContextType {
   userProfile: UserProfile | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, firstName: string, lastName: string, role: 'user' | 'agent') => Promise<void>;
+  signup: (email: string, password: string, firstName: string, lastName: string, role?: 'user' | 'agent') => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   error: string | null;
@@ -142,7 +142,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const signup = async (email: string, password: string, firstName: string, lastName: string, role: 'user' | 'agent') => {
+  const signup = async (email: string, password: string, firstName: string, lastName: string, role: 'user' | 'agent' = 'user') => {
     try {
       setError(null);
       

@@ -33,8 +33,7 @@ const SignUp = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    agreeToTerms: false,
-    role: 'user' as 'user' | 'agent'
+    agreeToTerms: false
   });
 
   useEffect(() => {
@@ -50,13 +49,8 @@ const SignUp = () => {
     }
     
     try {
-      await signup(formData.email, formData.password, formData.firstName, formData.lastName, formData.role);
-      // Redirect based on role - traditional property app behavior
-      if (formData.role === 'user') {
-        navigate('/'); // Regular users go to homepage
-      } else {
-        navigate('/agent'); // Agents go to dashboard
-      }
+      await signup(formData.email, formData.password, formData.firstName, formData.lastName);
+      navigate('/'); // All users go to homepage
     } catch (error) {
       // Error is handled by AuthContext
     }
@@ -71,19 +65,6 @@ const SignUp = () => {
     } catch (error) {
       // Error is handled by AuthContext
     }
-  };
-
-  const isFormValid = () => {
-    return (
-      formData.firstName &&
-      formData.lastName &&
-      formData.email &&
-      formData.password &&
-      formData.confirmPassword &&
-      formData.password === formData.confirmPassword &&
-      formData.password.length >= 6 &&
-      formData.agreeToTerms
-    );
   };
 
   return (
@@ -223,22 +204,6 @@ const SignUp = () => {
                         className="pl-10"
                         required
                       />
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="role">Account Type</Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                      <select
-                        id="role"
-                        value={formData.role}
-                        onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as 'user' | 'agent' }))}
-                        className="pl-10 pr-10"
-                        required
-                      >
-                        <option value="user">Property Seeker</option>
-                        <option value="agent">Property Agent</option>
-                      </select>
                     </div>
                   </div>
 
